@@ -20,20 +20,23 @@
         e = e.parentNode;
         let no = e.dataset.no;
         let type = e.dataset.type;
-        let eno = e.type;
+        let eno = e.dataset.eno;       
 
         if (confirm("Are you sure you want to delete employee "+ type +" request?") ){
-                    
-            xxhr("GET", "xhtml_response.php?q=aprDelReq&a="+ userno +"&r="+ no +"&e="+ eno +
-                "&t="+ e.dataset.type, 
-            function(msg){
+            
+            let url = "xhtml_response.php?q=aprDelReq&a="+ userno +"&r="+ no +"&e="+ eno + "&t="+ e.dataset.type + _session_vars;                        
+
+            xxhr("GET", url, 
+                function(msg){
+                
                 // console.log(msg);
+                alert(msg);
+
                 let tr = e.parentNode;
                 let table = tr.parentNode;
                 table.removeChild(tr);
 
-                alert(msg);
-
+                
 
             });
         }
@@ -70,8 +73,7 @@
     
 
     function btn_approve(){ // APPROVE
-        
-       
+               
         // GET REQUEST NO.
         // var userno = <?php echo json_encode($tl_approver); ?>;
         // var teamnox =<?php echo json_encode($gt_team_nox); ?>; 
@@ -246,6 +248,7 @@
 
     function ajaxCall(approves,array_countx,approve_rqno,approve_lvlno,userno,teamnos,stats){
     	
+        
     // alert(approves);
     //alert(userno);
     //alert(teamnos);
@@ -289,7 +292,7 @@
                    document.getElementById(element_name).innerHTML = res[i] ; // approve
             	   document.getElementById(flagx_name).innerHTML =   getFlagImage(flag_res[i],approve_rqno);
     	
-                }
+                }                                                
 
                 uncheck();
                 document.team_rqst.arno_collect.value = "";
@@ -297,13 +300,14 @@
                 //hide busy gif
                 $("div#busygif").remove();
                 $('img#floating_busygif').css('display','none');
+
             }            
         }
 
         //alert('team_request_ajax.php?tdcontent='+approves+'&userno='+userno+'&tn='+teamnos+'&stats='+stats+'&tbl=WA');
         
-
-        xmlhttpxxx.open('GET','team_request_ajax.php?tdcontent='+approves+'&userno='+userno+'&tn='+teamnos+'&stats='+stats+'&tbl=WA',true);
+        let url = 'team_request_ajax.php?tdcontent='+ approves +'&userno='+userno+'&tn='+teamnos+'&stats='+stats+'&tbl=WA';
+        xmlhttpxxx.open('GET', url,true);
         xmlhttpxxx.send();
 
         document.getElementById('clear_x').disabled=true;

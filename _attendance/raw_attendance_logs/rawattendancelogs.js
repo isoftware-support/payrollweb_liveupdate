@@ -16,7 +16,7 @@
 	  if ( member ) memNo = member.value;
 
 		busy.show2();
-		xxhr("GET", 'xhtml_response.php?q=myRawLogs&f='+ fr +'&t='+ to +'&m='+ memNo, show);
+		xxhr("GET", 'xhtml_response.php?q=myRawLogs&f='+ fr +'&t='+ to +'&m='+ memNo + _session_vars, show);
 
 	}
 

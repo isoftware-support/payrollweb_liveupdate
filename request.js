@@ -10,7 +10,7 @@ $(document).ready(function(){
 
     //$('td #exclamation').css({'width':'16px','padding':'0 0 2px 0'});
     
-    $('tr.web_subpage:odd').css('background-color','#FFF9ED');
+    //$('tr.web_subpage:odd').css('background-color','#FFF9ED');    
 
     //selected from home
     $('tr.home-select').css('background-color','#E0EBEB');
@@ -18,6 +18,7 @@ $(document).ready(function(){
     $('a.req_remarks,.req_disapproved').click(function(){	
 			return false;
 	});    
+
 
     $('a.req_remarks').hover(                         
         function(e){  
@@ -76,7 +77,6 @@ $(document).ready(function(){
     //busy gif on approval buttons
     $('#approve_x, #clear_x, #disapproval_saved, #disapprove_x').click(function(){   	
 
-
         var num = $("input:checked[name^=apr]").length;
         if (num < 1){
             alert("Please select a request.");
@@ -99,6 +99,14 @@ $(document).ready(function(){
 });
 
 
+function selectIt(e){
+	
+	let id = e.dataset.id;	
+	let radio = get("input[value='"+ id +"']");
+	if (radio){
+		radio.checked = true;
+	}
+}
 
 function togglecheckbox()
 {

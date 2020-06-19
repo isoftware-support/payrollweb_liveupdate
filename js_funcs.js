@@ -1,4 +1,10 @@
 
+    //alert('js_funcs');
+    
+    // row stripes
+    var trs = $('tr.row-stripe:odd');
+    if (trs) $(trs).addClass('DataRowStripe');    
+    
 //classes
 
     function getById( id ){
@@ -20,13 +26,22 @@
     }
 
 
+    function addClass(groupSelector, className){
+
+        var elements = getAll(groupSelector);
+        for(var i = 0; i < elements.length; i++){
+            elements[i].classList.add(className);
+        }
+    }
+
+
     function BusyGif(){	
-        
+                
     	//remove first
         var div = $("div#busygif");
     	if (div.length) $(div).remove();
 
-        $('body').append("<div id='busygif'><img src=images/loading-gif.gif width=20px/></div>");          
+        $('body').append("<div id='busygif'><img src=images/loading-gif.gif width=30px/></div>");          
         $('div#busygif').css({'display':'block', 'position':'absolute'}).hide();   
 
 
@@ -40,13 +55,48 @@
             });         	
         };
 
-        this.show2 = function(){
-            CenterDiv('div#busygif');
+        this.show2 = function(topAdj = 0){
+            CenterDiv('div#busygif', topAdj );
+            // $("div#busygif").css("zindex",99);
         	$("div#busygif").show();    
         }
         this.hide = function(){
         	$("div#busygif").hide();
+            
         }
+    }
+
+    function DateFormat(sDate, format){
+
+        // format : Y-m-d , y-M-d
+
+        let date = new Date(sDate);
+
+        let day = date.getDate();
+        let month = date.getMonth();
+        let year = date.getFullYear();
+
+        let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+        let m = month +1;
+        let d = day;
+        let y = year;
+        let y2 = y.toString().substr(0,2);
+        var ret = format;
+
+        // year
+        ret = ret.replace("Y", y);
+        ret = ret.replace("y", y2);
+
+        // month
+        ret = ret.replace("M", months[month]);
+        ret = ret.replace("m", m);
+
+        // day
+        ret = ret.replace("d", d);
+
+        
+        return ret;
     }
 
     function MyDateClass(dateString, dateFormat){        
@@ -120,6 +170,39 @@
 
 
 //functions
+
+var isCheckedByCheckbox = false;
+function selectChecbox(e, id="", id2=""){
+    
+    let tag = e.tagName;
+
+    if (e.type == 'checkbox'){
+        isCheckedByCheckbox = true;
+        return;
+    }else{
+
+        if ( isCheckedByCheckbox ){
+            isCheckedByCheckbox = false;
+            return;
+        }     
+        
+        var chk;
+
+        // id 1
+        if( id.indexOf("#") == -1 ) id = '#'+id;        
+        chk = get(id); 
+        if ( chk ) chk.checked = !chk.checked;        
+
+        // id 2
+        if (id2){
+            if( id2.indexOf("#") == -1 ) id2 = '#'+id2;            
+            chk = get(id2);
+            if ( chk ) chk.checked = !chk.checked;
+        }
+        
+    }  
+}
+
 
 function log(s)
 {
@@ -197,15 +280,39 @@ function dimBack(dimIt){
     }
 }
 //-------------------------------
-
-function CenterDiv(id) {    
-    
+function CenterDiv(id, topAdj = 0) {    
+        
     var elem = $(id);   
     var top = (($(window).height() - $(elem).outerHeight()) / 2) + $(window).scrollTop();
     var left = (($(window).width() - $(elem).outerWidth()) / 2) + $(window).scrollLeft();
+
+    top = top + topAdj;
+
     $(elem).css({'top':top, 'left':left});  
 }
 //-------------------------------
+
+function CenterItem(id){
+
+    if ( id.indexOf("#") == -1 ) id = "#" + id;
+
+    let e = get(id);
+
+    let wh = window.innerHeight;
+    let ww = window.innerWidth;
+    let sy = window.scrollY;
+    let sx = window.scrollX;
+
+    let eh = e.clientHeight;
+    let ew = e.clientWidth;
+
+    let x = (ww / 2) - (ew / 2) + sx;
+    let y = (wh / 2) - (eh / 2) + sy;
+
+    e.style.top = y;
+    e.style.left = x;    
+}
+
 
 function CalendarDateTime(imgID, inputTextID, showTime, dateFormat){
 
@@ -311,7 +418,9 @@ function xxhr(method, path, func){
 
     xhr.onload = function(){
         if (this.status == 200){
-            func(this.responseText);                     
+
+            if (func)
+                func(this.responseText);                     
 
         // }else if( this.status == 404){
         //  p.innerHTML = " not found";
@@ -320,6 +429,25 @@ function xxhr(method, path, func){
     xhr.send();         
 }
 
+function xxhrGet(url, callBackFunc = ""){
+   xxhr("GET", url, callBackFunc);
+}
+
+function xxhrPost(url, data=[], callBackFunc){
+
+    let xhr = new XMLHttpRequest();
+    let formData = new FormData();
+
+    for( var name in data ){        
+        formData.append(name, data[name]);                                
+    }
+
+    xhr.open("POST", url, true);
+    xhr.onload = function(){
+        if (this.status == 200) callBackFunc(this.responseText);                     
+    };
+    xhr.send(formData);
+}
 
 
 //---------------functions-----------------

@@ -1,4 +1,4 @@
-    
+    // alert( 'select cutoff js')    ;
     
     $(document).ready(function(){	       
         
@@ -6,12 +6,25 @@
         $("#btn_cutoff_prev").click(function(){				
             var date = $("#cutoff_nav_start").val();
             set_cutoff_date( date, -1);
+            disableUploadAttdButton();
         });			
 
         $("#btn_cutoff_next").click(function(){				
             var date = $("#cutoff_nav_end").val();
             set_cutoff_date( date, +1);
-        });					
+
+            disableUploadAttdButton();
+        });				
+
+        $("#cutoff_nav_start, #cutoff_nav_end").change(function(){
+            disableUploadAttdButton();
+        });
+
+        function disableUploadAttdButton(){
+            let btn = get('#btn-upload-logs');
+            if ( btn ) btn.disabled = true;
+            // if ( btn ) btn.parentNode.removeChild(btn);   // remove button
+        }
         
         //filter collapsed
         //var chk_filter_val = "<?php echo $chk_filter_val; ?>";
@@ -31,15 +44,23 @@
 
     function set_cutoff_date( date, type){
 
+        busy.show2();
+
         //$.post('ajax_calls.php', {func:'getCutoff_start_end_date', t:type, d:date, p:<?php echo $cutoff_nav_payperiod; ?>}, 
-        $.post('ajax_calls.php', {func:'getCutoff_start_end_date', t:type, d:date, p:cutoff_nav_payperiod}, 
-            function(data){   
+        var param = {'func':'getCutoff_start_end_date', 't':type, 'd':date, 'p': cutoff_nav_payperiod};
+        // console.log(param);
+        
+        $.post('ajax_calls.php', param, 
+        function(data){   
                         
-                // alert(data);
-                var a = JSON.parse(data);
-                
-                $("#cutoff_nav_start").val(a.start);
-                $("#cutoff_nav_end").val(a.end);
+            // alert(data);
+            
+            var a = JSON.parse(data);
+            
+            $("#cutoff_nav_start").val(a.start);
+            $("#cutoff_nav_end").val(a.end);               
+
+            busy.hide();
         });				
     }	
 
@@ -66,13 +87,26 @@
             $(div).fadeIn('fast');
             div_members.style.display = "none";
             
-            btn.type="button";            
+            // btn.type="button";            
         }else{
             $(div).fadeOut('fast');
             div_members.style.display = "";
 
-            btn.type="submit";            
+            // btn.type="submit";            
         }        
+
+    }
+
+    function showAttdLogsFilter(e){
+
+        let div = get('#cutoff_filter_attd_upload');        
+        if (e.checked){
+            $(div).fadeIn('fast');
+            div.stype.display = "none";
+        }else{
+            $(div).fadeOut('fast');
+            div.stype.display = "";
+        }
 
     }
 
@@ -86,6 +120,7 @@
             return;
         }
 
+        // alert(1);
         busy.show2();
 
         let empNos=[];
@@ -110,27 +145,31 @@
             i = getById( 'cutoff_nav_show_raw' ).checked ? 1 : 0;        
 
         let l = "xhtml_response.php?q=MixedAttds&n="+ empNos.join(",") +"&s="+ s +"&e="+ e +"&p="+ cutoff_nav_payperiod +
-            "&i="+ i +"&a="+ attds.join(",");
+            "&i="+ i +"&a="+ attds.join(",") + _session_vars;
         // console.log(l);
-        xxhr("GET", l, showIt);
+        
+        xxhr("GET", l, function( ret ){
+
+            let el = getById("uploaded-attds");
+            el.innerHTML = ret;
+
+            busy.hide();
+        });
 
     }
 
-    function showIt( ret ){
-
-        let el = getById("attd_section");
-        el.innerHTML = ret;
-
-        busy.hide();
-    }
-
+    /*
     function priorSubmit(e){
-
-        if ( e.type == "button"){
+        
+        // multi member view
+        var chk = get("#chk_multi_emps:checked");
+        if ( chk ){
             showMultiAttendances();
-            return;
+            return false;
         }
-       
+        
+
+
         //var isAttendance = "<?php echo $cutoff_nav_is_attendance; ?>";
         var isAttendance = cutoff_nav_is_attendance;
         
@@ -156,5 +195,7 @@
             $("input#cutoff_nav_filter_codes").val( codes );
             $("input#cutoff_nav_filter_values").val( values );
         }
-
+      
     };
+    */
+

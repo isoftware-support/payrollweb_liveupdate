@@ -1,10 +1,10 @@
 
 
-var busy = new BusyGif();
+
 var msgAttdNo = 0;            // for message purpose
 
 
-showAttendanceJobs();
+// showAttendanceJobs();
 
 
 // --------------- show job records ---------------------
@@ -27,15 +27,16 @@ function showAttendanceJobs()
 		pp = attd.pp;		
 	}
 	
-	busy.show2();
-  xxhr("GET", "xhtml_response.php?q=GetJobs&no="+ aNo.join(",") +"&e="+ empNo +"&c="+ cutoff +"&p="+ pp, showJobsRecord);
+	xxhr("GET", "xhtml_response.php?q=GetJobs&no="+ aNo.join(",") +"&e="+ empNo +"&c="+ cutoff +"&p="+ pp + _session_vars, showJobsRecord);
 
 }
 
 
 function showJobsRecord( ret )
 {
-
+	
+	busy.hide();
+	
 	let e, attd, tr;
 
 	let jobs = JSON.parse(ret);
@@ -56,7 +57,7 @@ function showJobsRecord( ret )
 			tr = e.parentElement.parentElement;   //get tr parent tag 
 			createJobsSection( tr, attd );
 
-			e.text = " - ";
+			e.innerHTML = "<center>-</center>";
 
 			attNoToDisableChanges = 0;
 		}		
@@ -87,12 +88,15 @@ function showJobsRecord( ret )
 
 		//approval
 		el = get("input[data-no='approval_"+ attd.no +"']");
-		el.checked = job.stat == "1" ? true : false;
-		el.dataset.no = 'done';
-		if ( ! isTeamMode ) el.disabled = true;
+		if ( el){
+			el.checked = job.stat == "1" ? true : false;
+			el.dataset.no = 'done';
+			if ( ! isTeamMode ) el.disabled = true;
+		}
 
 
 	});
+
 
 	// remove new and save link if approved - on employee side only
 	toRemoveSave.forEach( function(no){
@@ -111,7 +115,7 @@ function showJobsRecord( ret )
 		}
 	});
 
-	busy.hide();
+	
 }
 
 // --------------- ---- ---------------------
@@ -121,9 +125,9 @@ function createJobEntry(e){
 		//change tag text
 	var isHide = false;
 	if (e.text.trim() == "+"){
-		e.text = " - ";
+		e.innerHTML = "<center>-</center>";
 	}else{
-		e.text = " + ";
+		e.innerHTML = "<center>+</center>";
 		isHide = true;
 	}
 
@@ -202,13 +206,19 @@ function saveJobs(empNo, attdNo, maxHours, date, pp, isApproveJobs = false)
 	//for message display
 	msgAttdNo = attdNo;
 
-  busy.show2();
-  xxhr("GET", "xhtml_response.php?q=SaveJobs&i="+ ids.join('~') +"&d="+ aTxt.join('~'), 
-  	function(msg){
+  	busy.show2();
+  	let url = "xhtml_response.php?q=SaveJobs&i="+ ids.join('~') +"&d="+ aTxt.join('~') + _session_vars + "&debug=1";  
+  	xxhr("GET", url, function(res){
+  		
+  		busy.hide();
 
+  		let ret = JSON.parse(res);
+  		console.log(ret);
+
+  		let msg = ret.msg;
   		if ( isApproveJobs ) msg = "Jobs successfuly saved and approved.";
   		showMessage( msg ); 
-  	});                    
+	});                    
 
 }
 
@@ -250,27 +260,27 @@ function newJobRow(attdNo, maxHours, isNew = true)
 
 
 	var t=[];
-	t.push("<tr class=''>");
+	t.push("<tr class='DataFieldValue DataRowHeight' >");
 
 	let id = 'jobcode_'+ attdNo;
-	t.push("<td class='ContentTextNormal'>" +
-		"<select id='"+ id +"' class='ContentTextNormal w-100' data-no='"+ id +"'>"+ jobs.join("") +"<select> </td>");
+	t.push("<td class=''>" +
+		"<select id='"+ id +"' class='DropDownList wp-90' data-no='"+ id +"'>"+ jobs.join("") +"<select></td>");
 
 	id = "subcode_"+ attdNo;
-	t.push("<td align='center'><input class='ContentTextNormal' data-no='"+ id +"' type='text' size='10' id='"+ id +"'></td>");
+	t.push("<td class='' align='center'><input class='EditBox wp-90 mb-2' data-no='"+ id +"' type='text' size='10' id='"+ id +"'></td>");
 
 	id = "hours_"+ attdNo;
-	t.push("<td align='center'><input class='ContentTextNormal w-50' data-no='"+ id +"' type='number' id='"+ id +"' value='"+ hours +"'></td>");
+	t.push("<td class=''  align='center'><input class='EditBox wp-90' data-no='"+ id +"' type='number' id='"+ id +"' value='"+ hours +"'></td>");
 
 	// approval
 	id = "approval_"+ attdNo;
-	let chk = "<input type='checkbox' data-no='"+ id +"' id='"+ id +"'>";
+	let chk = "<input class='CheckBox' type='checkbox' data-no='"+ id +"' id='"+ id +"'>";
 	if ( ! isTeamMode ) chk = '&nbsp;';	
 	t.push("<td align='center'>"+ chk +"</td>");
 
 	// remove link
 	id = "id='remove_"+ attdNo +"'";
-	t.push("<td class='ContentTextNormal'><a "+ id +" class='jobs-link-sub' href='#' onclick='removeJob(this); return false;'>Remove</a></td>");
+	t.push("<td colspan='' class='DataFieldValue ' ><a "+ id +" class='DataFieldValueLink' href='#' onclick='removeJob(this); return false;'>Remove</a></td>");
 
 	t.push("</tr>");
 
@@ -324,21 +334,28 @@ function createJobsSection( tr, attd )
 		if ( !isTeamMode ) approvalTitle = "&nbsp;";
 
 		var a = [];
-		a.push("<td class='jobs-bc ContentTextNormal' colspan='9'>");		
+		a.push("<td class='jobs-bc ContentTextNormal' colspan='100'>");		
 		a.push("<div class='jobs-bc jobs-row'>");		
-		a.push("<table id='jobs_table_"+ attd.no +"' class='ContentTextNormal' width='400px'> ");
-		a.push("</th><th>Job Code</th><th>Sub Code</th><th>Hours</th><th>"+ approvalTitle +"</th><th>&nbsp;</th>");
+		a.push("<table id='jobs_table_"+ attd.no +"' class='DataFieldValue' width='400px'> ");		
+		a.push( "<tr class='ContentTableHeading '>" +
+				"<th class='py-2'>Job Code</th>" +
+				"<th >Sub Code</th>" +
+				"<th >Hours</th>" +
+				"<th >"+ approvalTitle +"</th>" +
+				"<th >&nbsp;</th>" +
+				"</tr>"
+				);
 		a.push("<col width='25%'><col width='20%'><col width='15%'><col width='15%'><col width='25%'>");
 		a.push("</table>");
 
 		id = " id='save_"+ attd.no +"' ";
 		a.push("<div "+ id +">")
 		a.push("<br>");	
-		a.push("<a href='#' class='jobs-link-sub' onclick='newJobRow("+ attd.no +", "+ attd.hours +"); return false;'>New Job</a>");
-		a.push("&nbsp;<a href='#' class='jobs-link-sub' onclick='saveJobs("+ attd.all +"); return false;'>Save Jobs</a>");
+		a.push("<a href='#' class='DataFieldValueLink' onclick='newJobRow("+ attd.no +", "+ attd.hours +"); return false;'>New Job</a>");
+		a.push("<a href='#' class='DataFieldValueLink px-10' onclick='saveJobs("+ attd.all +"); return false;'>Save Jobs</a>");
 
 		if ( isTeamMode ){			
-			a.push("&nbsp;<a href='#' class='jobs-link-sub' onclick='saveJobs("+ attd.all +", true); return false;'>Approve Jobs</a>");
+			a.push("<a href='#' class='DataFieldValueLink' onclick='saveJobs("+ attd.all +", true); return false;'>Approve Jobs</a>");
 		} 
 		a.push("</div>")
 		a.push("<p class='jobs-message' id='msg_here_"+ attd.no +"'></>")
@@ -348,8 +365,8 @@ function createJobsSection( tr, attd )
 		var row =  table.insertRow( rowIndex + 1);
 		row.id = "jobs_row_"+ attd.no;
 		row.innerHTML = a.join("");
-
 }
+
 
 function linkDataValue(e, isQuoteDate = true)
 {

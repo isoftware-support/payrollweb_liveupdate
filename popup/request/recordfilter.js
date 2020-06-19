@@ -1,5 +1,5 @@
-	
-	function applyFilter(mode){
+
+		function applyFilter(mode){
 
 			var params = '';
 			f = document.forms[0];		
@@ -29,8 +29,7 @@
 			//alert(mode);
 			//alert(params);			
 
-
-			let path = host + "/xhtml_response.php?q=SaveFilter&fr="+ parent + params;						
+			let path = host + "/xhtml_response.php?q=SaveFilter&fr="+ parent + params + _session_vars;						
 			// alert(path);
 			xxhr("GET", path, function(msg){
 				
@@ -40,8 +39,15 @@
 			});
 			
 		}		
+
 		function filter_reloadParent(params){	
 			
+			window.opener.location.reload();
+			self.close();
+
+			/*
+			return;
+
 			var urls = f.prevpage.value;
 						
 
@@ -56,6 +62,7 @@
 	
 			opener.location.href = newurl + prev_url + params;
 			self.close();
+			*/
 		}		
 
 	

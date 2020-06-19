@@ -49,6 +49,8 @@ function collectChecked(){
 
 function show_team_name(tm,en,m,w,y){
     
+    // alert(3);
+
     var xmlhttp;
 
     if (window.XMLHttpRequest)
@@ -72,7 +74,10 @@ function show_team_name(tm,en,m,w,y){
         }
       }
 
-    xmlhttp.open("GET","_schedule/team_schedules_ajax.php?q="+tm+"&e="+en+"&m="+m+"&w="+w+"&y="+y,true);
+    let url = "_schedule/team_schedules_ajax.php?q="+tm+"&e="+en+"&m="+m+"&w="+w+"&y="+y;
+    console.log( url);
+
+    xmlhttp.open("GET", url,true);
     xmlhttp.send();
 
 }
@@ -80,6 +85,7 @@ function show_team_name(tm,en,m,w,y){
 
 
 function show_team_name_dd(tm,e){
+
 
     var xmlhttp;
 
@@ -463,7 +469,7 @@ function multiplesched(selidx,h,w,buttonval, el = null){
 
 function repSelected(l){
 
-    //alert(l);
+    // alert(1);
 
     if(l=="m"){
         document.getElementById("dd_teamname").selectedIndex = document.getElementById("ddm_teamname").selectedIndex;
